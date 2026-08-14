@@ -42,6 +42,9 @@ run = """
   # 修复: yacd 默认 API 地址跟随当前访问地址(window.location.origin), 而非硬编码 127.0.0.1:9090
   # 用 Python 脚本而非 sed, 避免 macOS(BSD sed) 与 Linux(GNU sed) 的 -i 语法差异导致补丁失效
   python3 patches/patch-yacd.py build/yacd
+  # pnpm 10 默认忽略依赖构建脚本, 导致 esbuild/core-js 二进制无法安装, vite build 失败。
+  # 写入 pnpm-workspace.yaml 的 onlyBuiltDependencies 允许构建脚本
+  printf 'onlyBuiltDependencies:\n  - esbuild\n  - core-js\n' > build/yacd/pnpm-workspace.yaml
   (cd build/yacd && pnpm install && pnpm build)
   rm -rf static/yacd && cp -r build/yacd/public static/yacd
 
