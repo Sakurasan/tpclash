@@ -1,0 +1,23 @@
+<script>
+  // 迁移: 旧版 yacd 默认 127.0.0.1:9090 -> 当前访问地址
+  // 构建时由 mise 任务注入到 index.html 的 </body> 前
+  (function () {
+    try {
+      var KEY = 'yacd.metacubex.one';
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (!s || !Array.isArray(s.clashAPIConfigs)) return;
+      var origin = window.location.origin;
+      var changed = false;
+      for (var i = 0; i < s.clashAPIConfigs.length; i++) {
+        var c = s.clashAPIConfigs[i];
+        if (c && (c.baseURL === 'http://127.0.0.1:9090' || c.baseURL === 'http://localhost:9090') && c.baseURL !== origin) {
+          c.baseURL = origin;
+          changed = true;
+        }
+      }
+      if (changed) localStorage.setItem(KEY, JSON.stringify(s));
+    } catch (e) {}
+  })();
+</script>
