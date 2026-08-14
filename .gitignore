@@ -275,3 +275,6 @@ $RECYCLE.BIN/
 static/
 build/
 tpclash
+# Python
+__pycache__/
+*.pyc

@@ -40,19 +40,8 @@ run = """
   rm -rf build/yacd build/official
   git clone --depth 1 --branch "$YACD_VER" https://github.com/MetaCubeX/Yacd-meta.git build/yacd
   # 修复: yacd 默认 API 地址跟随当前访问地址(window.location.origin), 而非硬编码 127.0.0.1:9090
-  # (用 `sed -i ''` 以兼容 macOS/Linux; 每次补丁后立即校验, 上游改版导致补丁失效时构建直接失败)
-  # 1) app.ts: data-base-url 缺省时回退到当前 origin
-  sed -i '' "s|.getAttribute('data-base-url') ?? 'http://127.0.0.1:9090'|.getAttribute('data-base-url') ?? window.location.origin|" build/yacd/src/store/app.ts
-  grep -q "?? window.location.origin" build/yacd/src/store/app.ts || { echo "[mise] ERROR: yacd app.ts 补丁未生效" >&2; exit 1; }
-  # 2) index.html: 移除硬编码的 data-base-url 属性(否则上面的回退分支永远不生效)
-  sed -i '' 's| data-base-url="[^"]*"||' build/yacd/index.html
-  if grep -q 'data-base-url' build/yacd/index.html; then
-    echo "[mise] ERROR: yacd index.html 补丁未生效" >&2
-    exit 1
-  fi
-  # 3) 注入迁移脚本: 将旧版保存的 127.0.0.1:9090 迁移为当前访问地址
-  awk 'NR==FNR { lines[NR]=$0; n=NR; next } { if (index($0, "</body>") > 0) { for (i=1; i<=n; i++) print lines[i] } print }' patches/yacd-migrate-base-url.html build/yacd/index.html > build/yacd/index.html.new
-  mv build/yacd/index.html.new build/yacd/index.html
+  # 用 Python 脚本而非 sed, 避免 macOS(BSD sed) 与 Linux(GNU sed) 的 -i 语法差异导致补丁失效
+  python3 patches/patch-yacd.py build/yacd
   (cd build/yacd && pnpm install && pnpm build)
   rm -rf static/yacd && cp -r build/yacd/public static/yacd
 

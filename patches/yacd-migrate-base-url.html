@@ -1,6 +1,6 @@
 <script>
   // 迁移: 旧版 yacd 默认 127.0.0.1:9090 -> 当前访问地址
-  // 构建时由 mise 任务注入到 index.html 的 </body> 前
+  // 构建时由 patch-yacd.py 注入到 index.html 的 body 结束标签之前
   (function () {
     try {
       var KEY = 'yacd.metacubex.one';
