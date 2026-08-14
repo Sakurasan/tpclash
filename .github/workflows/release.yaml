@@ -17,6 +17,9 @@ env:
   FORCE_COLOR: 1
   CGO_ENABLED: 0
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -86,7 +89,9 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: steps.info.outputs.status == 'success'
       env:
-          GITHUB_TOKEN: ${{ secrets.G1THUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          # action-gh-release 当前基于 Node 20, 临时允许以避免弃用阻断
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
       with:
           prerelease: ${{ secrets.PRERELEASE }}
           tag_name: ${{ steps.extract_tag.outputs.tag_name }}
