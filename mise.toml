@@ -49,7 +49,11 @@ run = """
   rm -rf static/yacd && cp -r build/yacd/public static/yacd
 
   git clone --depth 1 --branch "$MCXD_VER" https://github.com/MetaCubeX/metacubexd.git build/official
+  # 修复: metacubexd 默认 API 地址跟随当前访问地址(window.location.origin), 而非硬编码 127.0.0.1:9090
+  python3 patches/patch-metacubexd.py build/official
   (cd build/official && pnpm install && pnpm build)
+  # 构建后向生成的 index.html 注入 localStorage 迁移脚本
+  python3 patches/patch-metacubexd.py build/official/packages/ui/.output/public
   rm -rf static/official && cp -r build/official/packages/ui/.output/public static/official
 
   rm -rf build/yacd build/official

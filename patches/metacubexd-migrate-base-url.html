@@ -1,0 +1,23 @@
+<script>
+  // TPClash 补丁: 迁移旧版 metacubexd 默认 127.0.0.1:9090 -> 当前访问地址
+  // 构建时由 patch-metacubexd.py 注入到 index.html 的 body 结束标签之前
+  (function () {
+    try {
+      var KEY = 'endpointList';
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (!Array.isArray(s)) return;
+      var origin = window.location.origin;
+      var changed = false;
+      for (var i = 0; i < s.length; i++) {
+        var e = s[i];
+        if (e && (e.url === 'http://127.0.0.1:9090' || e.url === 'http://localhost:9090') && e.url !== origin) {
+          e.url = origin;
+          changed = true;
+        }
+      }
+      if (changed) localStorage.setItem(KEY, JSON.stringify(s));
+    } catch (e) {}
+  })();
+</script>
