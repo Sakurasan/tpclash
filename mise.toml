@@ -39,6 +39,8 @@ run = """
 
   rm -rf build/yacd build/official
   git clone --depth 1 --branch "$YACD_VER" https://github.com/MetaCubeX/Yacd-meta.git build/yacd
+  # 修复: yacd 默认 API 地址硬编码为 127.0.0.1:9090, 改为自动跟随当前访问地址(window.location.origin)
+  sed -i "s|.getAttribute('data-base-url') ?? 'http://127.0.0.1:9090'|.getAttribute('data-base-url') ?? window.location.origin|" build/yacd/src/store/app.ts
   (cd build/yacd && pnpm install && pnpm build)
   rm -rf static/yacd && cp -r build/yacd/public static/yacd
 
