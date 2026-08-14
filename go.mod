@@ -1,16 +1,14 @@
 module github.com/TPClash/tpclash
 
-go 1.21
-
-toolchain go1.21.1
+go 1.23
 
 require (
 	github.com/TPClash/logrus v0.1.1
-	github.com/fsnotify/fsnotify v1.7.0
+	github.com/docker/docker v25.0.3+incompatible
+	github.com/fsnotify/fsnotify v1.10.1
 	github.com/google/nftables v0.2.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/lorenzosaino/go-sysctl v0.3.1
-	github.com/docker/docker v25.0.3+incompatible
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.22.0
@@ -22,7 +20,6 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/distribution/reference v0.5.0 // indirect
-	github.com/docker/docker v25.0.3+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
