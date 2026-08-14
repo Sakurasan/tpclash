@@ -14,7 +14,26 @@ TPClash 可以自动安装 ~~Clash Premium~~（已停更）/ Mihomo, 并自动�
 **TPClash 的透明代理规则、日志配置、Dashboard(UI) 配置等全部从标准的 Clash 配置文件内读取, 并完成自适应; TPClash 暂时不会创建自己的自定义
 配置文件(减轻使用负担).**
 
-## 二、使用教程
+## 二、一键安装
+
+支持 systemd 的 Linux 系统可通过脚本一键下载并安装最新版 TPClash(mihomo):
+
+```sh
+# 安装最新版(默认读取 /etc/clash.yaml 配置)
+bash <(curl -fsSL https://raw.githubusercontent.com/TPClash/tpclash/master/install.sh)
+
+# 指定远程/本地配置文件, 并安装后立即启动
+bash <(curl -fsSL https://raw.githubusercontent.com/TPClash/tpclash/master/install.sh) \
+  --config https://example.com/clash.yaml --start
+
+# 国内网络可搭配 ghproxy 镜像加速下载
+bash <(curl -fsSL https://raw.githubusercontent.com/TPClash/tpclash/master/install.sh) --with-ghproxy
+```
+
+脚本会自动检测架构并下载对应平台的 `tpclash-mihomo` 二进制, 安装到 `/usr/local/bin/tpclash`, 若系统支持则注册为 systemd 服务。
+更多参数请执行 `bash install.sh --help` 查看。
+
+## 三、使用教程
 
 为了使README更加整洁干练，以突出重要内容，分成了两部分。
 
@@ -22,7 +41,7 @@ TPClash 可以自动安装 ~~Clash Premium~~（已停更）/ Mihomo, 并自动�
 
 （不使用GitHub Wiki的原因是因为不方便备份）
 
-## 三、TPClash 做了什么
+## 四、TPClash 做了什么
 
 **TPClash 在启动后会进行如下动作:**
 
@@ -33,7 +52,7 @@ TPClash 可以自动安装 ~~Clash Premium~~（已停更）/ Mihomo, 并自动�
 - 5、选择性进行网络配置, 例如为 Docker 用户自动设置 nftables
 - 6、在后台持续监视本地或远程配置文件变动, 然后自动重载
 
-## 四、如何编译 TPClash
+## 五、如何编译 TPClash
 
 由于 TPClash 是一个集成工具, 所以在编译前请安装好以下工具链:
 
@@ -57,14 +76,14 @@ task # go-task 安装成功后会包含此命令
 
 **其他高级编译(例如单独编译特定平台)请执行 `task --list` 查看.**
 
-## 五、其他说明
+## 六、其他说明
 
 TPClash 默认释放的文件包含了 [Loyalsoldier/clash-rules](https://github.com/Loyalsoldier/clash-rules) 相关文件, 可在规则中直接使用;
 
 **TPClash 同时也释放了 [Hackl0us/GeoIP2-CN](https://github.com/Hackl0us/GeoIP2-CN) 项目的 Country.mmdb 文件, 该 GeoIP 数据库
 仅包含中国大陆地区 IP, 所以如果使用 `GEOIP,US,PROXY` 等其他国家规则会失败.**
 
-## 六、复活版TPClash频道&讨论群
+## 七、复活版TPClash频道&讨论群
 
 Telegram 频道: [https://t.me/tpclash](https://t.me/tpclash)
 

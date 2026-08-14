@@ -56,11 +56,12 @@ profile:
 
 tun:
   enable: true
-  stack: system # or gvisor
+  stack: mixed # or system/gvisor
   dns-hijack:
     - any:53
+    - tcp://any:53
   auto-route: true
-  auto-redir: true
+  auto-redirect: true
   auto-detect-interface: true
 
 iptables:

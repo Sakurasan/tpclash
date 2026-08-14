@@ -1,0 +1,6 @@
+[tools]
+"ubi:go-task/task" = "latest"
+node = "24"
+
+[settings]
+yes = true

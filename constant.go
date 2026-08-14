@@ -45,20 +45,22 @@ secret: tpclash
 	tunStandardPatch = `# TPClash TUN AutoFix
 tun:
   enable: true
-  stack: system
+  stack: mixed
   dns-hijack:
     - any:53
+    - tcp://any:53
   auto-route: true
-  auto-redir: true
+  auto-redirect: true
 `
 	tunEBPFPatch = `# TPClash TUN eBPF AutoFix
 tun:
   enable: true
-  stack: system
+  stack: mixed
   dns-hijack:
     - any:53
+    - tcp://any:53
   auto-route: false
-  auto-redir: false
+  auto-redirect: false
 `
 	dnsPatch = `# TPClash DNS AutoFix
 dns:
