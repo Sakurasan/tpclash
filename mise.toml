@@ -1,6 +1,6 @@
 [tools]
 golang = "1.26.5"
-node = "24"
+node = "26"
 
 [settings]
 
