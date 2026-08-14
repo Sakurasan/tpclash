@@ -22,7 +22,7 @@ set -euo pipefail
 # --------------------------------------------------------------------------
 # 默认配置
 # --------------------------------------------------------------------------
-REPO_OWNER="TPClash"
+REPO_OWNER="Sakurasan"
 REPO_NAME="tpclash"
 GH_API="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest"
 GH_RELEASE="https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download"
@@ -58,15 +58,10 @@ detect_arch() {
             # 大部分云厂商 CPU 均支持 amd64-v3, 可自行通过 TPCLASH_ARCH=amd64 强制兼容版
             echo "amd64-v3"
             ;;
-        aarch64|arm64)        echo "arm64"  ;;
-        armv7l|armhf)         echo "armv7"  ;;
-        armv6l)               echo "armv6"  ;;
-        armv5te|arm)          echo "armv5"  ;;
-        i386|i486|i586|i686)  echo "386"    ;;
-        mips64le)             echo "mips64le" ;;
-        mips64)               echo "mips64" ;;
-        mipsel)               echo "mipsle" ;;
-        mips)                 echo "mips"   ;;
+        aarch64|arm64)        echo "arm64"    ;;
+        armv7l|armv6l|armv5te|arm|armhf) echo "arm32" ;;
+        riscv64|riscv)        echo "riscv64"  ;;
+        i386|i486|i586|i686)  echo "386"      ;;
         *) die "不支持的架构: $mach, 请通过 TPCLASH_ARCH 手动指定" ;;
     esac
 }

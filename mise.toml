@@ -1,6 +1,169 @@
 [tools]
-"ubi:go-task/task" = "latest"
+golang = "1.26.5"
 node = "24"
 
 [settings]
-yes = true
+
+# ---------------------------------------------------------------------------
+# TPClash 构建任务 (使用 mise 内置任务运行器, 无需 go-task)
+#
+# 用法:
+#   mise run                   # 构建 linux-arm64 + linux-amd64 并打包
+#   mise run linux-arm64-mihomo
+#   mise run linux-amd64-mihomo
+#   mise run clean
+#
+# 依赖命令: curl, jq, git, gzip, pnpm (node 由 mise 提供)
+# ---------------------------------------------------------------------------
+
+[tasks.clean]
+run = """
+  rm -rf build static
+  rm -rf *.tmp
+"""
+
+[tasks.prepare-dashboard]
+run = """
+  mkdir -p build static
+  if [ -f static/Country.mmdb ]; then :; else
+    curl -sSL https://cdn.jsdelivr.net/gh/Hackl0us/GeoIP2-CN@release/Country.mmdb > static/Country.mmdb
+  fi
+
+  if [ -d static/yacd ] && [ -d static/official ]; then
+    echo "[mise] dashboards already built, skip"
+    exit 0
+  fi
+
+  YACD_VER=$(curl -sSL https://api.github.com/repos/MetaCubeX/Yacd-meta/releases/latest | jq -r '.name')
+  MCXD_VER=$(curl -sSL https://api.github.com/repos/MetaCubeX/metacubexd/releases/latest | jq -r '.name')
+
+  rm -rf build/yacd build/official
+  git clone --depth 1 --branch "$YACD_VER" https://github.com/MetaCubeX/Yacd-meta.git build/yacd
+  (cd build/yacd && pnpm install && pnpm build)
+  rm -rf static/yacd && cp -r build/yacd/public static/yacd
+
+  git clone --depth 1 --branch "$MCXD_VER" https://github.com/MetaCubeX/metacubexd.git build/official
+  (cd build/official && pnpm install && pnpm build)
+  rm -rf static/official && cp -r build/official/packages/ui/.output/public static/official
+
+  rm -rf build/yacd build/official
+"""
+
+[tasks.linux-arm64-mihomo]
+depends = ["prepare-dashboard"]
+run = """
+  PLAT=linux-arm64; GOARCH=arm64; GOAMD64=
+  VER=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.name')
+  curl -sSL "https://github.com/MetaCubeX/mihomo/releases/download/$VER/mihomo-$PLAT-$VER.gz" > build/mihomo-$PLAT.gz
+  gzip -d -f build/mihomo-$PLAT.gz 2>/dev/null || true
+  chmod +x build/mihomo-$PLAT
+  cp -f build/mihomo-$PLAT static/xclash
+  BIN=tpclash-mihomo-linux-$GOARCH
+  GOOS=linux GOARCH=$GOARCH GOARM= GOAMD64=$GOAMD64 GOMIPS= \
+    go build -trimpath -o "build/$BIN" \
+    -ldflags "-w -s \
+      -X 'main.build=$(date "+%F %T")' \
+      -X 'main.commit=$(git rev-parse HEAD)' \
+      -X 'main.version=$(git describe --tags --always)' \
+      -X 'main.clash=Mihomo $VER' \
+      -X 'main.branch=mihomo' \
+      -X 'main.binName=$BIN'"
+"""
+
+[tasks.linux-amd64-mihomo]
+depends = ["prepare-dashboard"]
+run = """
+  PLAT=linux-amd64-compatible; GOARCH=amd64; GOAMD64=
+  VER=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.name')
+  curl -sSL "https://github.com/MetaCubeX/mihomo/releases/download/$VER/mihomo-$PLAT-$VER.gz" > build/mihomo-$PLAT.gz
+  gzip -d -f build/mihomo-$PLAT.gz 2>/dev/null || true
+  chmod +x build/mihomo-$PLAT
+  cp -f build/mihomo-$PLAT static/xclash
+  BIN=tpclash-mihomo-linux-$GOARCH
+  GOOS=linux GOARCH=$GOARCH GOARM= GOAMD64=$GOAMD64 GOMIPS= \
+    go build -trimpath -o "build/$BIN" \
+    -ldflags "-w -s \
+      -X 'main.build=$(date "+%F %T")' \
+      -X 'main.commit=$(git rev-parse HEAD)' \
+      -X 'main.version=$(git describe --tags --always)' \
+      -X 'main.clash=Mihomo $VER' \
+      -X 'main.branch=mihomo' \
+      -X 'main.binName=$BIN'"
+"""
+
+[tasks.linux-amd64-v3-mihomo]
+depends = ["prepare-dashboard"]
+run = """
+  PLAT=linux-amd64; GOARCH=amd64; GOAMD64=v3
+  VER=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.name')
+  curl -sSL "https://github.com/MetaCubeX/mihomo/releases/download/$VER/mihomo-$PLAT-$VER.gz" > build/mihomo-$PLAT.gz
+  gzip -d -f build/mihomo-$PLAT.gz 2>/dev/null || true
+  chmod +x build/mihomo-$PLAT
+  cp -f build/mihomo-$PLAT static/xclash
+  BIN=tpclash-mihomo-linux-amd64-v3
+  GOOS=linux GOARCH=$GOARCH GOARM= GOAMD64=$GOAMD64 GOMIPS= \
+    go build -trimpath -o "build/$BIN" \
+    -ldflags "-w -s \
+      -X 'main.build=$(date "+%F %T")' \
+      -X 'main.commit=$(git rev-parse HEAD)' \
+      -X 'main.version=$(git describe --tags --always)' \
+      -X 'main.clash=Mihomo $VER' \
+      -X 'main.branch=mihomo' \
+      -X 'main.binName=$BIN'"
+"""
+
+[tasks.build-all]
+depends = ["prepare-dashboard"]
+run = """
+  set -e
+  VER=$(curl -sSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | jq -r '.name')
+
+  for KEY in 386 amd64 amd64-v3 arm64 arm32 riscv64; do
+    case "$KEY" in
+      386)               PLAT=linux-386;                 GOARCH=386;      GOAMD64=; GOARM=; GOMIPS= ;;
+      amd64)             PLAT=linux-amd64-compatible;    GOARCH=amd64;    GOAMD64=; GOARM=; GOMIPS= ;;
+      amd64-v3)          PLAT=linux-amd64;               GOARCH=amd64;    GOAMD64=v3; GOARM=; GOMIPS= ;;
+      arm64)             PLAT=linux-arm64;               GOARCH=arm64;    GOAMD64=; GOARM=; GOMIPS= ;;
+      arm32)             PLAT=linux-armv7;               GOARCH=arm;      GOAMD64=; GOARM=7; GOMIPS= ;;
+      riscv64)           PLAT=linux-riscv64;             GOARCH=riscv64;  GOAMD64=; GOARM=; GOMIPS= ;;
+    esac
+
+    curl -sSL "https://github.com/MetaCubeX/mihomo/releases/download/$VER/mihomo-$PLAT-$VER.gz" > "build/mihomo-$PLAT.gz"
+    gzip -d -f "build/mihomo-$PLAT.gz" 2>/dev/null || true
+    chmod +x "build/mihomo-$PLAT"
+    cp -f "build/mihomo-$PLAT" static/xclash
+
+    BIN=tpclash-mihomo-linux-$KEY
+    echo "[mise] building $BIN ..."
+    GOOS=linux GOARCH=$GOARCH GOARM=$GOARM GOAMD64=$GOAMD64 GOMIPS=$GOMIPS \
+      go build -trimpath -o "build/$BIN" \
+      -ldflags "-w -s \
+        -X 'main.build=$(date "+%F %T")' \
+        -X 'main.commit=$(git rev-parse HEAD)' \
+        -X 'main.version=$(git describe --tags --always)' \
+        -X 'main.clash=Mihomo $VER' \
+        -X 'main.branch=mihomo' \
+        -X 'main.binName=$BIN'"
+  done
+"""
+
+[tasks.package]
+depends = ["build-all"]
+run = """
+  set -e
+  mkdir -p build/dist
+  for BIN in tpclash-mihomo-linux-386 tpclash-mihomo-linux-amd64 tpclash-mihomo-linux-amd64-v3 \
+             tpclash-mihomo-linux-arm64 tpclash-mihomo-linux-arm32 tpclash-mihomo-linux-riscv64; do
+    [ -f "build/$BIN" ] || continue
+    tar czf "build/dist/$BIN.tar.gz" -C build "$BIN"
+    gzip -9 -c "build/$BIN" > "build/dist/$BIN.gz"
+  done
+  (cd build/dist && sha256sum * > SHA256SUMS)
+  echo "[mise] 打包完成: build/dist/"
+"""
+
+[tasks.default]
+run = """
+  mise run build-all
+  mise run package
+"""

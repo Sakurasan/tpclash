@@ -1,4 +1,4 @@
-module github.com/TPClash/tpclash
+module github.com/Sakurasan/tpclash
 
 go 1.21
 

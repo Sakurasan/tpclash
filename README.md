@@ -20,14 +20,14 @@ TPClash 可以自动安装 ~~Clash Premium~~（已停更）/ Mihomo, 并自动�
 
 ```sh
 # 安装最新版(默认读取 /etc/clash.yaml 配置)
-bash <(curl -fsSL https://raw.githubusercontent.com/TPClash/tpclash/master/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/Sakurasan/tpclash/master/install.sh)
 
 # 指定远程/本地配置文件, 并安装后立即启动
-bash <(curl -fsSL https://raw.githubusercontent.com/TPClash/tpclash/master/install.sh) \
+bash <(curl -fsSL https://raw.githubusercontent.com/Sakurasan/tpclash/master/install.sh) \
   --config https://example.com/clash.yaml --start
 
 # 国内网络可搭配 ghproxy 镜像加速下载
-bash <(curl -fsSL https://raw.githubusercontent.com/TPClash/tpclash/master/install.sh) --with-ghproxy
+bash <(curl -fsSL https://raw.githubusercontent.com/Sakurasan/tpclash/master/install.sh) --with-ghproxy
 ```
 
 脚本会自动检测架构并下载对应平台的 `tpclash-mihomo` 二进制, 安装到 `/usr/local/bin/tpclash`, 若系统支持则注册为 systemd 服务。
@@ -64,17 +64,32 @@ bash <(curl -fsSL https://raw.githubusercontent.com/TPClash/tpclash/master/insta
 - nodejs(用于编译 Dashboard)
 - pnpm(Dashboard 编译所需依赖工具, 可通过 `npm i -g xxx` 安装)
 - golang 1.21+
-- [go-task](https://github.com/go-task/task)(类似 Makefile 的替代工具)
+- [mise](https://mise.jdx.dev/)(集成了 go-task 类似的任务运行器与工具链管理)
 
-TPClash 项目内的 `Taskfile.yaml` 内已经写好了自动编译脚本, 只需要执行 `task` 命令即可:
+项目内的 `mise.toml` 已写好工具链声明与自动编译任务, 只需执行:
 
 ```sh
-git clone https://github.com/TPClash/tpclash.git
+git clone https://github.com/Sakurasan/tpclash.git
 cd tpclash
-task # go-task 安装成功后会包含此命令
+mise install    # 安装 node/golang 等工具链
+mise run        # 构建全部平台并打包到 build/dist/
 ```
 
-**其他高级编译(例如单独编译特定平台)请执行 `task --list` 查看.**
+**其他高级编译(例如单独编译特定平台)请执行 `mise tasks` 查看.**
+
+常用构建任务:
+
+| 命令 | 说明 |
+| --- | --- |
+| `mise run default` | 构建全部支持平台并打包 |
+| `mise run build-all` | 构建全部支持平台(latest mihomo) |
+| `mise run package` | 将已构建产物打包到 build/dist/ |
+| `mise run linux-arm64-mihomo` | 仅构建 linux/arm64 |
+| `mise run linux-amd64-mihomo` | 仅构建 linux/amd64 |
+| `mise run linux-amd64-v3-mihomo` | 仅构建 linux/amd64-v3 |
+| `mise run clean` | 清理构建缓存 |
+
+支持的全部平台: `386`, `amd64`, `amd64-v3`, `arm64`, `arm32`, `riscv64`。
 
 ## 六、其他说明
 
@@ -90,4 +105,4 @@ Telegram 频道: [https://t.me/tpclash](https://t.me/tpclash)
 Telegram 交流群：[https://t.me/+98SPc9rmV8w3Mzll](https://t.me/+98SPc9rmV8w3Mzll)
 
 ## Stargazers over time
-[![Stargazers over time](https://starchart.cc/TPClash/tpclash.svg?variant=adaptive)](https://starchart.cc/TPClash/tpclash)
+[![Stargazers over time](https://starchart.cc/Sakurasan/tpclash.svg?variant=adaptive)](https://starchart.cc/Sakurasan/tpclash)

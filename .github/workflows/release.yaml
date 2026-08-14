@@ -1,10 +1,13 @@
 name: TPClash Release
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       trigger:
-        description: Manually trigger
+        description: Manually trigger a release
         required: true
         type: choice
         options:
@@ -13,15 +16,13 @@ on:
 env:
   FORCE_COLOR: 1
   CGO_ENABLED: 0
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Put back the git branch into git
       shell: bash
       run: |
@@ -32,26 +33,33 @@ jobs:
           branch="${GITHUB_REF##*/}"
         fi
         git checkout -b "$branch" || true
-    - name: Docker Login
-      shell: bash
-      run: docker login --username "${DOCKERHUB_USERNAME}" --password "${DOCKERHUB_PASSWORD}"
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20.x'
     - name: Use Golang
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
         go-version: 'stable'
     - name: Install Deps
       shell: bash
       run: |
-        npm install -g pnpm @go-task/cli
+        curl -fsSL https://mise.run | sh
+        sudo apt-get update -y && sudo apt-get install -y jq gzip
+        npm install -g pnpm
+    - name: Setup Tools (mise)
+      shell: bash
+      run: |
+        export PATH="$HOME/.local/bin:$PATH"
+        mise trust
+        mise install
+        mise version
     - name: Build TPClash
       id: build
       shell: bash
       run: |
-        task
+        export PATH="$HOME/.local/bin:$PATH"
+        mise run default
         echo "status=success" >> $GITHUB_OUTPUT
     - name: Get current date
       id: timestamp
@@ -72,11 +80,10 @@ jobs:
           echo "${{ secrets.RELEASE_INFO }}" >> release.txt
           echo "" >> release.txt
           echo "Build time: ${{ steps.timestamp.outputs.date }}" >> release.txt
-          echo "Telegram: https://t.me/tpclash" >> release.txt
           touch release.txt
           echo "status=success" >> $GITHUB_OUTPUT
     - name: Upload artifacts to release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: steps.info.outputs.status == 'success'
       env:
           GITHUB_TOKEN: ${{ secrets.G1THUB_TOKEN }}
@@ -84,15 +91,4 @@ jobs:
           prerelease: ${{ secrets.PRERELEASE }}
           tag_name: ${{ steps.extract_tag.outputs.tag_name }}
           body_path: release.txt
-          files: build/*
-    - name: 'Send telegram message'
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-            ${{ steps.extract_tag.outputs.tag_name }}
-
-            ${{ secrets.RELEASE_INFO }}
-
-            https://github.com/TPClash/tpclash/releases/tag/${{ steps.extract_tag.outputs.tag_name }}
+          files: build/tpclash-mihomo-linux-*
