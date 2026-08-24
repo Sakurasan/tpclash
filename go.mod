@@ -11,7 +11,7 @@ require (
 	github.com/google/nftables v0.3.0
 	github.com/hashicorp/go-version v1.9.0
 	github.com/lorenzosaino/go-sysctl v0.3.1
-	github.com/sirupsen/logrus v1.10.0
+	github.com/sirupsen/logrus v1.10.1
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/crypto v0.55.0
 	gopkg.in/yaml.v3 v3.0.1
